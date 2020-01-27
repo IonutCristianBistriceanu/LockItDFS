@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace LockItDFS
 {
@@ -10,33 +11,42 @@ namespace LockItDFS
             var matrix = new List<List<int>>()
             {
                 new List<int>() {1, 0, 0, 1, 0},
-                new List<int>() {1, 1, 1, 1, 0},
+                new List<int>() {1, 0, 1, 1, 0},
                 new List<int>() {1, 0, 0, 0, 0}
             };
 
-            Console.WriteLine(GetBiggestRegion(matrix));
+            var regions = GetAllRegions(matrix);
+
+            foreach (var region in regions)
+            {
+                Console.WriteLine(region.ToString());
+            }
         }
 
-        private static int GetBiggestRegion(IReadOnlyList<List<int>> matrix)
+        private static List<Region> GetAllRegions(IReadOnlyList<List<int>> matrix)
         {
-            var maxRegion = 0;
             var totalRegions = new List<Region>();
 
             for (var row = 0; row < matrix.Count; row++)
             {
                 for (var column = 0; column < matrix[row].Count; column++)
                 {
-                    if (matrix[row][column] != 1) continue;
-                    var region  = new Region();
-                    var size = GetRegionSize(matrix, row, column, region);
-                    region.Size = size;
-                    maxRegion = Math.Max(size, maxRegion);
-                    totalRegions.Add(region);
+                    if (matrix[row][column] != 1)
+                        continue;
+
+                    GetNewRegion(matrix, row, column, totalRegions);
                 }
             }
-            
-                        
-            return maxRegion;
+
+            return totalRegions;
+        }
+
+        private static void GetNewRegion(IReadOnlyList<List<int>> matrix, int row, int column,
+            List<Region> totalRegions)
+        {
+            var region = new Region();
+            GetRegionSize(matrix, row, column, region);
+            totalRegions.Add(region);
         }
 
         private static int GetRegionSize(IReadOnlyList<List<int>> matrix, in int row, in int column, Region region)
@@ -54,7 +64,7 @@ namespace LockItDFS
             matrix[row][column] = 0;
             var size = 1;
             region.AddIconPosition(new IconPosition(row, column));
-            
+
             for (var r = row - 1; r <= row + 1; r++)
             {
                 for (var c = column - 1; c <= column + 1; c++)
@@ -66,6 +76,7 @@ namespace LockItDFS
                 }
             }
 
+            region.Size = size;
             return size;
         }
     }
@@ -84,6 +95,18 @@ namespace LockItDFS
         {
             _positions.Add(iconPosition);
         }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var iconPosition in _positions)
+            {
+                sb.AppendLine(iconPosition.GetPosition());
+            }
+
+            return sb.ToString();
+        }
     }
 
     public class IconPosition
@@ -93,8 +116,13 @@ namespace LockItDFS
 
         public IconPosition(int row, int column)
         {
-            this._row = row;
+            _row = row;
             _column = column;
+        }
+
+        public string GetPosition()
+        {
+            return $"Icon is on row {_row} and column {_column}";
         }
     }
 }
