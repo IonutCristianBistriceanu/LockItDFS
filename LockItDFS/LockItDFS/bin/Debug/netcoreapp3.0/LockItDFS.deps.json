@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.0": {
+      "LockItDFS/1.0.0": {
+        "runtime": {
+          "LockItDFS.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "LockItDFS/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

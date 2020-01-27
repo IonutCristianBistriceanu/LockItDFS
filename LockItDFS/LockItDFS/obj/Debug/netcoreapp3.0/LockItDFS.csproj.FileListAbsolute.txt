@@ -1,0 +1,11 @@
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\bin\Debug\netcoreapp3.0\LockItDFS.exe
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\bin\Debug\netcoreapp3.0\LockItDFS.deps.json
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\bin\Debug\netcoreapp3.0\LockItDFS.runtimeconfig.json
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\bin\Debug\netcoreapp3.0\LockItDFS.runtimeconfig.dev.json
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\bin\Debug\netcoreapp3.0\LockItDFS.dll
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\bin\Debug\netcoreapp3.0\LockItDFS.pdb
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\obj\Debug\netcoreapp3.0\LockItDFS.csprojAssemblyReference.cache
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\obj\Debug\netcoreapp3.0\LockItDFS.AssemblyInfoInputs.cache
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\obj\Debug\netcoreapp3.0\LockItDFS.AssemblyInfo.cs
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\obj\Debug\netcoreapp3.0\LockItDFS.dll
+D:\Lock it borders\LockItDFS\LockItDFS\LockItDFS\obj\Debug\netcoreapp3.0\LockItDFS.pdb
