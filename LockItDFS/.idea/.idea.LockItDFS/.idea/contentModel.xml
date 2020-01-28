@@ -6,6 +6,7 @@
     <e p="D:\Lock it borders\LockItDFS\LockItDFS" t="IncludeFlat">
       <e p="LockItDFS" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
+        <e p="ExtensionMethods.cs" t="Include" />
         <e p="LockItDFS.csproj" t="IncludeRecursive" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">

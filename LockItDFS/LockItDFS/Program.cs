@@ -15,22 +15,26 @@ namespace LockItDFS
                 new List<int>() {0, 1, 1, 1, 0},
                 new List<int>() {0, 0, 0, 0, 0}
             };
-            
-            var clonedSpinResponse = new List<List<int>>(spinResponse.Count);
 
-            spinResponse.ForEach((item)=>
-            {
-                clonedSpinResponse.Add(new List<int>(item));
-            });
-
+            var clonedSpinResponse = spinResponse.CreateClone();
             var regions = GetAllRegions(clonedSpinResponse);
-            
+
             foreach (var region in regions)
             {
+                if (!region.IsValid)
+                {
+                    continue;
+                }
+
                 region.GenerateBorders(spinResponse);
-                Console.WriteLine(region.ToString());
-                Console.WriteLine(region.IsValid);
+                Console.WriteLine($"** Region is {GetRegionValidString(region.IsValid)}");
+                region.PrintIconBorders();
             }
+        }
+
+        private static string GetRegionValidString(in bool regionIsValid)
+        {
+            return regionIsValid ? "valid" : "invalid";
         }
 
         private static List<Region> GetAllRegions(IReadOnlyList<List<int>> matrix)
@@ -127,26 +131,26 @@ namespace LockItDFS
     public class Region
     {
         public int Size { get; set; } = 0;
-        private List<IconPosition> _positions;
+        private List<IconPosition> _iconPositions;
         public Dictionary<int, int> IconsCountByRow;
         public Dictionary<int, int> IconsCountByColumn;
         public bool IsValid => IsValidRegion();
 
         public Region()
         {
-            _positions = new List<IconPosition>();
+            _iconPositions = new List<IconPosition>();
             IconsCountByRow = new Dictionary<int, int>();
             IconsCountByColumn = new Dictionary<int, int>();
         }
 
         public void AddIconPosition(IconPosition iconPosition)
         {
-            _positions.Add(iconPosition);
+            _iconPositions.Add(iconPosition);
         }
 
         public IReadOnlyCollection<IconPosition> GetIconPositions()
         {
-            return _positions;
+            return _iconPositions;
         }
 
         private bool IsValidRegion()
@@ -158,7 +162,7 @@ namespace LockItDFS
         {
             var sb = new StringBuilder();
 
-            foreach (var iconPosition in _positions)
+            foreach (var iconPosition in _iconPositions)
             {
                 sb.AppendLine(iconPosition.GetPosition());
             }
@@ -168,9 +172,17 @@ namespace LockItDFS
 
         public void GenerateBorders(List<List<int>> matrix)
         {
-            foreach (var icon in _positions)
+            foreach (var icon in _iconPositions)
             {
                 icon.GenerateBorders(matrix);
+            }
+        }
+
+        public void PrintIconBorders()
+        {
+            foreach (var icon in _iconPositions)
+            {
+                icon.PrintBorders();
             }
         }
     }
@@ -179,8 +191,7 @@ namespace LockItDFS
     {
         public int Row { get; }
         public int Column { get; }
-
-        public Dictionary<string, bool> Borders;
+        public readonly Dictionary<string, bool> Borders;
 
         public IconPosition(int row, int column)
         {
@@ -200,30 +211,43 @@ namespace LockItDFS
             return $"Icon is on row {Row} and column {Column}";
         }
 
+        public void PrintBorders()
+        {
+            Console.WriteLine("\n");
+            Console.WriteLine("============================================");
+            Console.WriteLine($"Icon is on row {Row} and column {Column}");
+            Console.WriteLine("============================================");
+            foreach (var border in Borders)
+            {
+                if (border.Value)
+                {
+                    Console.WriteLine($"Icon has border on the {border.Key}");
+                }
+            }
+        }
+
         public void GenerateBorders(List<List<int>> matrix)
         {
-            //Top
-            if (Row - 1 < 0)
+            CalculateTopBorder(matrix);
+            CalculateRightBorder(matrix);
+            CalculateBottomBorder(matrix);
+            CalculateLeftBorder(matrix);
+        }
+
+        private void CalculateLeftBorder(List<List<int>> matrix)
+        {
+            if (Column - 1 < 0)
             {
-                Borders["top"] = true;
+                Borders["left"] = true;
             }
             else
             {
-                Borders["top"] = matrix[Row - 1][Column] != 1;
+                Borders["left"] = matrix[Row][Column - 1] != 1;
             }
+        }
 
-            //Right
-            if (Column + 1 > matrix[Row].Count)
-            {
-                Borders["right"] = true;
-            }
-            else
-            {
-                Borders["right"] = matrix[Row][Column + 1] != 1;
-            }
-
-
-            //Bottom
+        private void CalculateBottomBorder(List<List<int>> matrix)
+        {
             if (Row + 1 > matrix[Row].Count)
             {
                 Borders["bottom"] = true;
@@ -232,14 +256,29 @@ namespace LockItDFS
             {
                 Borders["bottom"] = matrix[Row + 1][Column] != 1;
             }
+        }
 
-            if (Column - 1 < 0)
+        private void CalculateRightBorder(List<List<int>> matrix)
+        {
+            if (Column + 1 > matrix[Row].Count)
             {
-                Borders["left"] = true;
+                Borders["right"] = true;
             }
             else
             {
-                Borders["left"] = matrix[Row][Column - 1] != 1;
+                Borders["right"] = matrix[Row][Column + 1] != 1;
+            }
+        }
+
+        private void CalculateTopBorder(List<List<int>> matrix)
+        {
+            if (Row - 1 < 0)
+            {
+                Borders["top"] = true;
+            }
+            else
+            {
+                Borders["top"] = matrix[Row - 1][Column] != 1;
             }
         }
     }
