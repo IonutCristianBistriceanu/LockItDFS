@@ -9,16 +9,25 @@ namespace LockItDFS
     {
         private static void Main(string[] args)
         {
-            var matrix = new List<List<int>>()
+            var spinResponse = new List<List<int>>()
             {
                 new List<int>() {1, 0, 0, 1, 0},
                 new List<int>() {0, 1, 1, 1, 0},
                 new List<int>() {0, 0, 0, 0, 0}
             };
+            
+            var clonedSpinResponse = new List<List<int>>(spinResponse.Count);
 
-            var regions = GetAllRegions(matrix);
+            spinResponse.ForEach((item)=>
+            {
+                clonedSpinResponse.Add(new List<int>(item));
+            });
+
+            var regions = GetAllRegions(clonedSpinResponse);
+            
             foreach (var region in regions)
             {
+                region.GenerateBorders(spinResponse);
                 Console.WriteLine(region.ToString());
                 Console.WriteLine(region.IsValid);
             }
@@ -156,6 +165,14 @@ namespace LockItDFS
 
             return sb.ToString();
         }
+
+        public void GenerateBorders(List<List<int>> matrix)
+        {
+            foreach (var icon in _positions)
+            {
+                icon.GenerateBorders(matrix);
+            }
+        }
     }
 
     public class IconPosition
@@ -163,15 +180,67 @@ namespace LockItDFS
         public int Row { get; }
         public int Column { get; }
 
+        public Dictionary<string, bool> Borders;
+
         public IconPosition(int row, int column)
         {
             Row = row;
             Column = column;
+            Borders = new Dictionary<string, bool>()
+            {
+                {"top", false},
+                {"right", false},
+                {"bottom", false},
+                {"left", false},
+            };
         }
 
         public string GetPosition()
         {
             return $"Icon is on row {Row} and column {Column}";
+        }
+
+        public void GenerateBorders(List<List<int>> matrix)
+        {
+            //Top
+            if (Row - 1 < 0)
+            {
+                Borders["top"] = true;
+            }
+            else
+            {
+                Borders["top"] = matrix[Row - 1][Column] != 1;
+            }
+
+            //Right
+            if (Column + 1 > matrix[Row].Count)
+            {
+                Borders["right"] = true;
+            }
+            else
+            {
+                Borders["right"] = matrix[Row][Column + 1] != 1;
+            }
+
+
+            //Bottom
+            if (Row + 1 > matrix[Row].Count)
+            {
+                Borders["bottom"] = true;
+            }
+            else
+            {
+                Borders["bottom"] = matrix[Row + 1][Column] != 1;
+            }
+
+            if (Column - 1 < 0)
+            {
+                Borders["left"] = true;
+            }
+            else
+            {
+                Borders["left"] = matrix[Row][Column - 1] != 1;
+            }
         }
     }
 }
