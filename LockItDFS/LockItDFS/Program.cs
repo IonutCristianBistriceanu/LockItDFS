@@ -7,29 +7,38 @@ namespace LockItDFS
 {
     public class Program
     {
+        public static List<Region> Regions { get; set; } = new List<Region>();
+
         private static void Main(string[] args)
         {
             var spinResponse = new List<List<int>>()
             {
-                new List<int>() {1, 0, 0, 1, 0},
-                new List<int>() {0, 1, 1, 1, 0},
-                new List<int>() {0, 0, 0, 0, 0}
+                new List<int>() {1, 1, 1, 1, 1},
+                new List<int>() {1, 1, 1, 1, 1},
+                new List<int>() {1, 1, 1, 1, 1}
             };
 
-            var clonedSpinResponse = spinResponse.CreateClone();
-            var regions = GetAllRegions(clonedSpinResponse);
-
-            foreach (var region in regions)
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            GetAllRegions(spinResponse);
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine($"Execution time {elapsedMs} ms");
+            
+            var filteredRegions = FilterRegions();
+            foreach (var region in filteredRegions)
             {
-                if (!region.IsValid)
-                {
-                    continue;
-                }
-
                 region.GenerateBorders(spinResponse);
-                Console.WriteLine($"** Region is {GetRegionValidString(region.IsValid)}");
+                Console.WriteLine("\n");
+                Console.WriteLine("-------------------------------------------------------------------------------");
+                Console.WriteLine($"** Region with Id: {region.RegionId} is {GetRegionValidString(region.IsValid)}");
+                Console.WriteLine("-------------------------------------------------------------------------------");
                 region.PrintIconBorders();
             }
+        }
+
+        private static List<Region> FilterRegions()
+        {
+            return Regions.Where(r => r.IsValid).ToList();
         }
 
         private static string GetRegionValidString(in bool regionIsValid)
@@ -37,70 +46,70 @@ namespace LockItDFS
             return regionIsValid ? "valid" : "invalid";
         }
 
-        private static List<Region> GetAllRegions(IReadOnlyList<List<int>> matrix)
+        private static void GetAllRegions(IReadOnlyList<List<int>> matrix)
         {
-            var totalRegions = new List<Region>();
-
+            int regionId = 0;
             for (var row = 0; row < matrix.Count; row++)
             {
                 for (var column = 0; column < matrix[row].Count; column++)
                 {
                     if (matrix[row][column] != 1)
                         continue;
-
-                    GetNewRegion(matrix, row, column, totalRegions);
+                    regionId++;
+                    CreateNewRegion(matrix, row, column, regionId);
                 }
             }
-
-            return totalRegions;
         }
 
-        private static void GetNewRegion(IReadOnlyList<List<int>> matrix, int row, int column,
-            List<Region> totalRegions)
+        private static void CreateNewRegion(IReadOnlyList<List<int>> matrix, int row, int column,
+            int regionId)
         {
-            var region = new Region();
+            var region = new Region(regionId);
             PopulateRegionData(matrix, row, column, region);
-            totalRegions.Add(region);
+
+            if (region.Size > 0)
+            {
+                Regions.Add(region);
+            }
         }
 
-        private static int PopulateRegionData(IReadOnlyList<List<int>> matrix, in int row, in int column, Region region)
+        private static void PopulateRegionData(IReadOnlyList<List<int>> matrix, in int row, in int column,
+            Region region)
         {
+            if (region.ContainsIcon(row, column))
+            {
+                return;
+            }
+
             if (row < 0 || column < 0 || row >= matrix.Count || column >= matrix[row].Count)
             {
-                return 0;
+                return;
             }
 
             if (matrix[row][column] == 0)
             {
-                return 0;
+                return;
             }
 
-            matrix[row][column] = 0;
-            var size = 1;
-            region.AddIconPosition(new IconPosition(row, column));
+            var icon = new IconPosition(row, column, region.RegionId);
 
+            if (IconIsInAnotherRegion(row, column))
+            {
+                return;
+            }
+
+            region.AddIconPosition(icon);
             AddIconToColumnDictionary(column, region);
             AddIconToRowDictionary(row, region);
-
-            for (var r = row - 1; r <= row + 1; r++)
-            {
-                for (var c = column - 1; c <= column + 1; c++)
-                {
-                    if (r == row && c == column || CheckIfDiagonal(r, c, row, column))
-                        continue;
-
-                    size += PopulateRegionData(matrix, r, c, region);
-                }
-            }
-
-            region.Size = size;
-            return size;
+            PopulateRegionData(matrix, row + 1, column, region);
+            PopulateRegionData(matrix, row - 1, column, region);
+            PopulateRegionData(matrix, row, column + 1, region);
+            PopulateRegionData(matrix, row, column - 1, region);
         }
 
-        private static bool CheckIfDiagonal(int r, int c, in int row, in int column)
+        private static bool IconIsInAnotherRegion(int row, int column)
         {
-            return ((r == row - 1 && c == column - 1) || (r == row - 1 && c == column + 1) ||
-                    (r == row && c == column + 1) || (r == row + 1 && c == column + 1));
+            return Regions.Any(region => region.ContainsIcon(row, column));
         }
 
         private static void AddIconToRowDictionary(int rowKey, Region region)
@@ -130,17 +139,25 @@ namespace LockItDFS
 
     public class Region
     {
-        public int Size { get; set; } = 0;
-        private List<IconPosition> _iconPositions;
+        public int Size => _iconPositions.Count;
+        public int RegionId { get; }
         public Dictionary<int, int> IconsCountByRow;
         public Dictionary<int, int> IconsCountByColumn;
         public bool IsValid => IsValidRegion();
+        private List<IconPosition> _iconPositions;
 
-        public Region()
+
+        public Region(int regionId)
         {
+            RegionId = regionId;
             _iconPositions = new List<IconPosition>();
             IconsCountByRow = new Dictionary<int, int>();
             IconsCountByColumn = new Dictionary<int, int>();
+        }
+
+        public bool ContainsIcon(int row, int column)
+        {
+            return _iconPositions.Any(icon => icon.Row == row && icon.Column == column);
         }
 
         public void AddIconPosition(IconPosition iconPosition)
@@ -192,9 +209,11 @@ namespace LockItDFS
         public int Row { get; }
         public int Column { get; }
         public readonly Dictionary<string, bool> Borders;
+        public int ParentRegionId { get; }
 
-        public IconPosition(int row, int column)
+        public IconPosition(int row, int column, int parentRegionId)
         {
+            ParentRegionId = parentRegionId;
             Row = row;
             Column = column;
             Borders = new Dictionary<string, bool>()
@@ -248,7 +267,7 @@ namespace LockItDFS
 
         private void CalculateBottomBorder(List<List<int>> matrix)
         {
-            if (Row + 1 > matrix[Row].Count)
+            if (Row + 1 > matrix.Count - 1)
             {
                 Borders["bottom"] = true;
             }
@@ -260,7 +279,7 @@ namespace LockItDFS
 
         private void CalculateRightBorder(List<List<int>> matrix)
         {
-            if (Column + 1 > matrix[Row].Count)
+            if (Column + 1 > matrix[Row].Count - 1)
             {
                 Borders["right"] = true;
             }
