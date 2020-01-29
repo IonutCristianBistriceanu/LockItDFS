@@ -7,15 +7,16 @@ namespace LockItDFS
 {
     public class Program
     {
-        public static List<Region> Regions { get; set; } = new List<Region>();
+        private static List<Region> Regions { get; } = new List<Region>();
+        private static bool[,] VisitedIcons = new bool[3, 5];
 
         private static void Main(string[] args)
         {
             var spinResponse = new List<List<int>>()
             {
-                new List<int>() {1, 1, 1, 1, 1},
-                new List<int>() {1, 1, 1, 1, 1},
-                new List<int>() {1, 1, 1, 1, 1}
+                new List<int>() {1, 1, 0, 1, 1},
+                new List<int>() {1, 0, 0, 0, 1},
+                new List<int>() {1, 1, 0, 1, 1}
             };
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -23,7 +24,7 @@ namespace LockItDFS
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
             Console.WriteLine($"Execution time {elapsedMs} ms");
-            
+
             var filteredRegions = FilterRegions();
             foreach (var region in filteredRegions)
             {
@@ -76,17 +77,17 @@ namespace LockItDFS
         private static void PopulateRegionData(IReadOnlyList<List<int>> matrix, in int row, in int column,
             Region region)
         {
-            if (region.ContainsIcon(row, column))
-            {
-                return;
-            }
-
             if (row < 0 || column < 0 || row >= matrix.Count || column >= matrix[row].Count)
             {
                 return;
             }
 
             if (matrix[row][column] == 0)
+            {
+                return;
+            }
+
+            if (VisitedIcons[row, column])
             {
                 return;
             }
@@ -99,6 +100,7 @@ namespace LockItDFS
             }
 
             region.AddIconPosition(icon);
+            VisitedIcons[row, column] = true;
             AddIconToColumnDictionary(column, region);
             AddIconToRowDictionary(row, region);
             PopulateRegionData(matrix, row + 1, column, region);
@@ -163,11 +165,6 @@ namespace LockItDFS
         public void AddIconPosition(IconPosition iconPosition)
         {
             _iconPositions.Add(iconPosition);
-        }
-
-        public IReadOnlyCollection<IconPosition> GetIconPositions()
-        {
-            return _iconPositions;
         }
 
         private bool IsValidRegion()
